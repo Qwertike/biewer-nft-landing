@@ -2,7 +2,6 @@ import {
   useAddress,
   useContract,
   ConnectWallet,
-  useNFTDrop,
 } from "@thirdweb-dev/react";
 import { useEffect, useState } from "react";
 
@@ -15,7 +14,6 @@ export default function LaunchPage() {
 
   const [mintOpen, setMintOpen] = useState(false);
   const [countdown, setCountdown] = useState("");
-
   const [price, setPrice] = useState(5);
   const [claimedSupply, setClaimedSupply] = useState(0);
   const [totalSupply, setTotalSupply] = useState(0);
@@ -67,7 +65,7 @@ export default function LaunchPage() {
   const handleMint = async () => {
     if (!contract || !address) return;
     try {
-      await contract.claimTo(address, 1); // Mint 1 NFT to connected wallet
+      await contract.claimTo(address, 1);
       alert("✅ Successfully minted!");
     } catch (err) {
       console.error(err);
@@ -79,8 +77,7 @@ export default function LaunchPage() {
     <div className="min-h-screen p-10 text-center bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 text-gray-800">
       <h1 className="text-4xl font-bold mb-4">Biewer Dog Lovers NFT Launch</h1>
       <p className="text-lg text-gray-700 max-w-2xl mx-auto mb-6">
-        Welcome to the official launch of the Biewer Dog Lovers NFT Collection —
-        a celebration of charm, loyalty, and community for all lovers of this unique breed.
+        Welcome to the official launch of the Biewer Dog Lovers NFT Collection — a celebration of charm, loyalty, and community for all lovers of this unique breed.
       </p>
 
       {!mintOpen ? (
@@ -95,8 +92,8 @@ export default function LaunchPage() {
 
           <div className="text-pink-700 font-medium italic mb-4">
             {claimedSupply < 500
-              ? `🎉 Early Supporter Offer: First 500 NFTs for only ${DISCOUNT_PRICE} MATIC!`
-              : `🔓 Standard Mint Price: ${NORMAL_PRICE} MATIC`}
+              ? `🎉 Early Supporter Offer: First 500 NFTs only ${DISCOUNT_PRICE} MATIC each! Reveal after 250 mints.`
+              : `🔓 Price: ${NORMAL_PRICE} MATIC`}
           </div>
 
           <div className="text-gray-600 mb-6">
@@ -116,6 +113,27 @@ export default function LaunchPage() {
               Mint 1 NFT ({price} MATIC)
             </button>
           )}
+
+          {/* OpenSea link */}
+          <div className="mt-10 flex justify-center">
+            <a
+              href="https://opensea.io/collection/biewer-dog-lovers"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="white"
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+              >
+                <path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0Zm.457 3.936a8.063 8.063 0 0 1 6.28 4.375l-2.05.99A6.028 6.028 0 0 0 12.457 5.9V3.936ZM4.964 8.25a8.063 8.063 0 0 1 6.23-4.28V5.9a6.03 6.03 0 0 0-4.03 3.302l-2.2-.952ZM3.778 13.1a8.063 8.063 0 0 1 .397-2.163l2.025.98a6.03 6.03 0 0 0-.297 2.143l-2.125-.96Zm8.222 7.964a8.063 8.063 0 0 1-6.28-4.373l2.05-.99a6.03 6.03 0 0 0 4.23 2.886v2.477ZM19.035 15.75a8.063 8.063 0 0 1-6.23 4.28v-2.477a6.03 6.03 0 0 0 4.03-3.302l2.2.952Zm1.187-2.848a8.063 8.063 0 0 1-.397 2.163l-2.025-.98a6.03 6.03 0 0 0 .297-2.143l2.125.96Zm-3.822-1.442H7.6a4.4 4.4 0 1 1 8.8 0Z" />
+              </svg>
+              View Collection on OpenSea
+            </a>
+          </div>
         </>
       )}
 
