@@ -37,9 +37,9 @@ export default function LaunchPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white p-10 text-center">
+    <div className="min-h-screen p-10 text-center bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 text-gray-800">
       <h1 className="text-4xl font-bold mb-4">Biewer Dog Lovers NFT Launch</h1>
-      <p className="text-gray-700 max-w-2xl mx-auto mb-6">
+      <p className="text-lg text-gray-700 max-w-2xl mx-auto mb-6">
         Welcome to the official launch of the Biewer Dog Lovers NFT Collection — a celebration of charm, loyalty, and community for all lovers of this unique breed.
       </p>
 
@@ -65,6 +65,18 @@ export default function LaunchPage() {
           <li>🔸 Q4 2025: Biewer Community Event</li>
           <li>🔸 2026: Breeder Collabs & New Drops</li>
         </ul>
+      </div>
+
+      <div className="w-full mt-10 py-6 bg-white bg-opacity-40 backdrop-blur-sm text-center rounded">
+        <p className="text-sm text-gray-700">
+          Questions? Contact us at{" "}
+          <a
+            href="mailto:info@biewerdoglovers.com"
+            className="text-blue-600 hover:underline"
+          >
+            info@biewerdoglovers.com
+          </a>
+        </p>
       </div>
     </div>
   );
