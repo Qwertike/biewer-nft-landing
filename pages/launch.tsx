@@ -54,7 +54,10 @@ export default function LaunchPage() {
       )}
 
       <div className="mb-10">
-        <ConnectWallet btnTitle="Connect Wallet" />
+        <ConnectWallet
+          btnTitle="Connect Wallet"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded"
+        />
       </div>
 
       <div className="text-left max-w-xl mx-auto">
@@ -67,7 +70,8 @@ export default function LaunchPage() {
         </ul>
       </div>
 
-      <div className="w-full mt-10 py-6 bg-white bg-opacity-40 backdrop-blur-sm text-center rounded">
+      {/* Email szekció lejjebb */}
+      <div className="w-full mt-20 py-6 bg-white bg-opacity-40 backdrop-blur-sm text-center rounded">
         <p className="text-sm text-gray-700">
           Questions? Contact us at{" "}
           <a
