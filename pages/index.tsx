@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import MysteryDog from '/public/Mystery Dog.png'; // ha máshol van, írd át az útvonalat
+import MysteryDog from '/public/Mystery Dog.png';
 
 export default function Home() {
   return (
@@ -21,6 +21,7 @@ export default function Home() {
       <p className="text-lg text-gray-600 max-w-xl">
         A heartfelt NFT project for Biewer Terrier lovers. Connect, collect, and access exclusive benefits!
       </p>
+
       <a
         href="/shop"
         className="mt-8 inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded"
@@ -33,6 +34,17 @@ export default function Home() {
       >
         View Mint Launch Info
       </a>
+
+      {/* E-mail kapcsolat alul */}
+      <p className="mt-10 text-sm text-gray-500">
+        Contact us at{' '}
+        <a
+          href="mailto:info@biewerdoglovers.com"
+          className="text-blue-600 hover:underline"
+        >
+          info@biewerdoglovers.com
+        </a>
+      </p>
     </div>
   );
 }
