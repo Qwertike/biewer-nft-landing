@@ -114,7 +114,6 @@ export default function LaunchPage() {
             </button>
           )}
 
-          {/* OpenSea link */}
           <div className="mt-10 flex justify-center">
             <a
               href="https://opensea.io/collection/biewer-dog-lovers"
@@ -161,3 +160,4 @@ export default function LaunchPage() {
     </div>
   );
 }
+
