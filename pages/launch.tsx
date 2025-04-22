@@ -66,6 +66,16 @@ export default function LaunchPage() {
     if (!contract || !address) return;
     try {
       await contract.claimTo(address, 1);
+
+      // 🔁 Twitter conversion tracking
+      if (typeof window !== "undefined" && typeof window.twq === "function") {
+        window.twq("event", "tw-pku6z-pku70", {
+          value: price.toFixed(2),
+          currency: "MATIC",
+          conversion_id: `mint-${Date.now()}`
+        });
+      }
+
       alert("✅ Successfully minted!");
     } catch (err) {
       console.error(err);
@@ -121,15 +131,6 @@ export default function LaunchPage() {
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded transition"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="white"
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-              >
-                <path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0Zm.457 3.936a8.063 8.063 0 0 1 6.28 4.375l-2.05.99A6.028 6.028 0 0 0 12.457 5.9V3.936ZM4.964 8.25a8.063 8.063 0 0 1 6.23-4.28V5.9a6.03 6.03 0 0 0-4.03 3.302l-2.2-.952ZM3.778 13.1a8.063 8.063 0 0 1 .397-2.163l2.025.98a6.03 6.03 0 0 0-.297 2.143l-2.125-.96Zm8.222 7.964a8.063 8.063 0 0 1-6.28-4.373l2.05-.99a6.03 6.03 0 0 0 4.23 2.886v2.477ZM19.035 15.75a8.063 8.063 0 0 1-6.23 4.28v-2.477a6.03 6.03 0 0 0 4.03-3.302l2.2.952Zm1.187-2.848a8.063 8.063 0 0 1-.397 2.163l-2.025-.98a6.03 6.03 0 0 0 .297-2.143l2.125.96Zm-3.822-1.442H7.6a4.4 4.4 0 1 1 8.8 0Z" />
-              </svg>
               View Collection on OpenSea
             </a>
           </div>
