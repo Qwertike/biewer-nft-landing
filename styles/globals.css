@@ -1,7 +1,31 @@
+/* globals.css */
+
+/* Alap Tailwind beállítások */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Testreszabott globális stílusok */
 body {
-  @apply bg-white text-gray-800 font-sans;
+  @apply bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 text-gray-800 font-sans;
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+/* Kép stílusok - ha az NFT képeket is meg szeretnéd jeleníteni szépen */
+.mint-image {
+  @apply max-w-full h-auto rounded-lg shadow-lg;
+}
+
+/* Gomb stílusok - itt például a mintelési gombot is testreszabhatod */
+.mint-button {
+  @apply bg-pink-600 hover:bg-pink-700 text-white font-semibold px-6 py-3 rounded-lg;
+}
+
+/* Különböző képernyőméretekhez */
+@media (max-width: 768px) {
+  body {
+    @apply bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200;
+  }
 }
