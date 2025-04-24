@@ -19,22 +19,29 @@ export default function Home() {
       <h1 className="text-4xl font-bold mb-4 text-gray-800">
         Welcome to Biewer Dog Lovers
       </h1>
-      <p className="text-lg text-gray-600 max-w-xl">
+      <p className="text-lg text-gray-600 max-w-xl mb-6">
         A heartfelt NFT project for Biewer Terrier lovers. Connect, collect, and access exclusive benefits!
       </p>
 
-      {/* Oldal gombok */}
-      <a
-        href="/shop"
-        className="mt-8 inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded"
-      >
-        Enter Shop
-      </a>
+      {/* Közösségépítő szöveg */}
+      <p className="text-lg text-gray-600 max-w-xl mb-6">
+        Our mission is to build a passionate community of Biewer Terrier enthusiasts. With NFTs and Web3 tools, we aim to support dog lovers and create a space for them to thrive. Stay tuned for the upcoming Token-Gated Shop launching in late 2025, where you can access exclusive products and experiences!
+      </p>
+
+      {/* "Mint Launch Info" gomb */}
       <a
         href="/launch"
         className="mt-4 inline-block bg-pink-600 hover:bg-pink-700 text-white font-semibold px-6 py-3 rounded"
       >
         View Mint Launch Info
+      </a>
+
+      {/* "Shop" gomb lejjebb helyezve */}
+      <a
+        href="/shop"
+        className="mt-8 inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded"
+      >
+        Enter Shop (Coming Soon)
       </a>
 
       {/* Letisztult közösségi ikon sor */}
@@ -97,3 +104,4 @@ export default function Home() {
     </div>
   );
 }
+
