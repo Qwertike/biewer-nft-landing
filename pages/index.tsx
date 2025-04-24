@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import MysteryDog from '/public/Mystery Dog.png';
+import MysteryDog from '/Mystery Dog.png';
 
 export default function Home() {
   return (
