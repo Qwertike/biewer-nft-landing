@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import MysteryDog from '/Mystery Dog.png';
 
 export default function Home() {
   return (
@@ -8,10 +7,12 @@ export default function Home() {
       {/* Animált kép */}
       <div className="w-64 h-64 mb-8 animate-float shadow-lg rounded-full overflow-hidden border-4 border-white">
         <Image
-          src={MysteryDog}
+          src="/Mystery Dog.png"  // A helyes elérési út a /public mappában
           alt="Mystery Dog NFT"
           layout="responsive"
           objectFit="cover"
+          width={400}
+          height={400}
         />
       </div>
 
@@ -104,4 +105,3 @@ export default function Home() {
     </div>
   );
 }
-
