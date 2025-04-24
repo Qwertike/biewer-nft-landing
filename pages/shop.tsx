@@ -23,6 +23,10 @@ export default function ShopPage() {
           Our exclusive shop is coming in the second half of the year. Stay tuned for exciting merchandise and perks for Biewer Dog Lovers NFT holders!
         </p>
 
+        <p className="text-lg text-gray-700 mb-6">
+          In the second half of 2025, our shop will be live. With access via your NFT and wallet, you'll enjoy exclusive discounts on a range of Biewer Dog Lovers themed items, such as dog-inspired t-shirts, caps, and other cool merch!
+        </p>
+
         <a
           href="https://discord.gg/CWw9r5cP"
           target="_blank"
@@ -32,6 +36,28 @@ export default function ShopPage() {
           Join Our Discord
         </a>
       </div>
+
+      {/* Twitter Pixel for Shop Tracking */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            !function(e,t,n,s,u,a){
+              e.twq||(s=e.twq=function(){
+                s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
+              },
+              s.version='1.1',
+              s.queue=[],
+              u=t.createElement(n),
+              u.async=!0,
+              u.src='https://static.ads-twitter.com/uwt.js',
+              a=t.getElementsByTagName(n)[0],
+              a.parentNode.insertBefore(u,a))
+            }(window,document,'script');
+            twq('config','pku6z');
+          `
+        }}
+      ></script>
     </div>
   );
 }
+
