@@ -1,3 +1,12 @@
+// index.tsx
+declare global {
+  interface Window {
+    twq: Function;
+  }
+}
+
+// További kódok itt
+
 import Image from 'next/image';
 
 export default function Home() {
