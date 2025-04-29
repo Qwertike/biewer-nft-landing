@@ -59,7 +59,7 @@ export default function Home() {
       <div className="mt-10 flex flex-row gap-6 items-center justify-center text-2xl text-gray-700">
         {/* Discord */}
         <a
-          href="https://discord.gg/CWw9r5cP"
+          href="https://discord.gg/nE5xxnSe"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:text-indigo-600 hover:scale-110 transition"
