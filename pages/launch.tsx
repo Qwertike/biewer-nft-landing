@@ -67,6 +67,12 @@ export default function LaunchPage() {
     try {
       await contract.claimTo(address, 1);
 
+      // ✅ Frissítés mint után
+      const claimed = await contract.totalClaimedSupply();
+      const total = await contract.totalSupply();
+      setClaimedSupply(claimed.toNumber());
+      setTotalSupply(total.toNumber());
+
       // 🔁 Twitter conversion tracking
       if (typeof window !== "undefined" && typeof window.twq === "function") {
         window.twq("event", "tw-pku6z-pku70", {
@@ -161,4 +167,3 @@ export default function LaunchPage() {
     </div>
   );
 }
-
