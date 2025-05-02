@@ -1,50 +1,87 @@
-import {
-  useAddress,
-  useContract,
-  useContractRead,
-  useClaimNFT,
-  ConnectWallet,
-} from "@thirdweb-dev/react";
 import { useEffect, useState } from "react";
+import {
+  createThirdwebClient,
+  getContract,
+  defineChain,
+  prepareContractCall,
+  sendTransaction,
+  resolveMethod,
+  readContract,
+} from "thirdweb";
+import { ConnectButton, useActiveAccount, useConnect } from "thirdweb/react";
 
-const CONTRACT_ADDRESS = "0xAFeaAeE58bEDF28807Bd48E6d00AF7AFf5655ba5";
+const client = createThirdwebClient({
+  clientId: "4307eea7e413a6850719d8df35c2a217", // IDE írd be a saját thirdweb project API kulcsodat
+});
+
+const contract = getContract({
+  client,
+  chain: defineChain(137), // Matic mainnet (vagy módosíts teszt hálózatra)
+  address: "0xAFeaAeE58bEDF28807Bd48E6d00AF7AFf5655ba5",
+});
 
 export default function MintPage() {
-  const address = useAddress();
-  const { contract } = useContract(CONTRACT_ADDRESS, "nft-drop");
-  const { data: totalSupply } = useContractRead(contract, "totalSupply");
-  const { data: claimedSupply } = useContractRead(contract, "totalClaimedSupply");
+  const account = useActiveAccount();
+  const connect = useConnect();
 
-  const [price, setPrice] = useState("–");
+  const [claimed, setClaimed] = useState("0");
+  const [total, setTotal] = useState("0");
+  const [price, setPrice] = useState("-");
   const [currency, setCurrency] = useState("MATIC");
-  const { mutateAsync: claimNFT, isLoading } = useClaimNFT(contract);
+  const [loading, setLoading] = useState(false);
 
-  // Aktív claim condition lekérése
   useEffect(() => {
-    if (!contract) return;
-
-    const fetchClaimCondition = async () => {
+    const fetchData = async () => {
       try {
-        const active = await contract.claimConditions.getActive();
-        console.log("Active Claim Condition:", active); // Logolja le az aktív fázist
-        setPrice(active.currencyMetadata.displayValue);
-        setCurrency(active.currencyMetadata.symbol);
-      } catch (error) {
-        console.error("Hiba az aktív claim fázis lekérése közben:", error);
+        const totalSupply = await readContract({
+          contract,
+          method: resolveMethod("totalSupply"),
+        });
+        setTotal(totalSupply.toString());
+
+        const claimedSupply = await readContract({
+          contract,
+          method: resolveMethod("totalClaimedSupply"),
+        });
+        setClaimed(claimedSupply.toString());
+
+        const activeCondition = await readContract({
+          contract,
+          method: resolveMethod("getClaimConditionById"),
+          params: [23], // vagy cseréld ki a helyes ID-re
+        });
+
+        setPrice(activeCondition.currencyMetadata.displayValue);
+        setCurrency(activeCondition.currencyMetadata.symbol);
+      } catch (err) {
+        console.error("Hiba az adatok lekérésekor:", err);
       }
     };
 
-    fetchClaimCondition();
-  }, [contract]);
+    fetchData();
+  }, []);
 
   const mintNFT = async () => {
-    if (!contract || !address) return;
+    if (!account) return;
+    setLoading(true);
     try {
-      const tx = await claimNFT({ to: address, quantity: 1 });
-      alert("✅ Sikeres mint!");
-      console.log("Mint tx:", tx);
-    } catch (err: any) {
-      alert(`❌ Mint failed: ${err?.reason || err?.message || "Ismeretlen hiba"}`);
+      const transaction = await prepareContractCall({
+        contract,
+        method: resolveMethod("claim"),
+        params: [account.address, 1],
+      });
+
+      const { transactionHash } = await sendTransaction({
+        transaction,
+        account,
+      });
+
+      alert("✅ Sikeres mint! TX: " + transactionHash);
+    } catch (err) {
+      console.error("Mint hiba:", err);
+      alert("❌ Mintelés sikertelen: " + (err?.message || "Ismeretlen hiba"));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,20 +90,20 @@ export default function MintPage() {
       <h1 className="text-3xl font-bold">🐶 Biewer Dog Lovers NFT</h1>
 
       <div>
-        {claimedSupply?.toString() || 0} / {totalSupply?.toString() || 0} NFT minted
+        {claimed} / {total} NFT minted
       </div>
 
       <div>💰 Aktuális ár: {price} {currency}</div>
 
-      <ConnectWallet />
+      <ConnectButton connect={connect} />
 
-      {address && (
+      {account && (
         <button
-          disabled={isLoading}
+          disabled={loading}
           onClick={mintNFT}
           className="bg-pink-600 hover:bg-pink-700 text-white px-6 py-3 rounded"
         >
-          {isLoading ? "Minting..." : `Mint 1 NFT (${price} ${currency})`}
+          {loading ? "Minting..." : `Mint 1 NFT (${price} ${currency})`}
         </button>
       )}
     </div>
