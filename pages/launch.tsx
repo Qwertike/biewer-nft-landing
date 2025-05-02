@@ -74,7 +74,7 @@ export default function LaunchPage() {
     }
 
     fetchData();
-  }, [claimed]);
+  }, [claimed]); // A claimed változóra figyelünk, hogy mindig frissülni tudjon a számlálás
 
   const handleMint = async () => {
     if (!account) return alert("Csatlakozz a tárcával előbb!");
@@ -96,6 +96,10 @@ export default function LaunchPage() {
       );
       alert("✅ Sikeres mintelés!");
       console.log("Mint tranzakció:", tx);
+
+      // Frissítsük a claimed számot tranzakció után
+      const updatedClaimed = await totalClaimedSupply({ contract });
+      setClaimed(Number(updatedClaimed));
     } catch (err) {
       console.error("Mint hiba:", err);
       alert("❌ Mint sikertelen: " + err?.message);
