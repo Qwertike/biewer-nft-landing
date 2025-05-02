@@ -19,20 +19,18 @@ export default function MintPage() {
   const [currency, setCurrency] = useState("MATIC");
   const { mutateAsync: claimNFT, isLoading } = useClaimNFT(contract);
 
-  // Aktív claim feltételek lekérése az Id alapján
+  // Aktív claim condition lekérése
   useEffect(() => {
     if (!contract) return;
 
     const fetchClaimCondition = async () => {
       try {
-        // Az első claim feltétel ID-jának lekérése (pl. 0)
-        const activeClaimCondition = await contract.getClaimConditionById(0);
-        
-        // Állítsuk be az árat és a pénznemet
-        setPrice(activeClaimCondition.currencyMetadata.displayValue);
-        setCurrency(activeClaimCondition.currencyMetadata.symbol);
+        const active = await contract.claimConditions.getActive();
+        console.log("Active Claim Condition:", active); // Logolja le az aktív fázist
+        setPrice(active.currencyMetadata.displayValue);
+        setCurrency(active.currencyMetadata.symbol);
       } catch (error) {
-        console.error("Nincs aktív claim fázis vagy hiba:", error);
+        console.error("Hiba az aktív claim fázis lekérése közben:", error);
       }
     };
 
@@ -46,7 +44,7 @@ export default function MintPage() {
       alert("✅ Sikeres mint!");
       console.log("Mint tx:", tx);
     } catch (err: any) {
-      alert(`❌ Mint failed: ${err?.reason || err?.message || "Unknown error"}`);
+      alert(`❌ Mint failed: ${err?.reason || err?.message || "Ismeretlen hiba"}`);
     }
   };
 
