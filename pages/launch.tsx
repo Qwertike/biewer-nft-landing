@@ -56,7 +56,7 @@ export default function MintPage() {
 
         if (claimConditions.length > 0) {
           // Az első aktív fázis feltételei
-          const claimCondition = claimConditions[0]; // Használhatunk több fázist is, ha szükséges
+          const claimCondition = claimConditions[0]; // Ha több fázis van, akkor válasszuk az aktívat
           const pricePerToken = Number(claimCondition.pricePerToken) / 1e18; // Átváltás 18 tizedesjegyre
           const maxPerWallet = Number(claimCondition.quantityLimitPerWallet);
           setPrice(pricePerToken.toString());
