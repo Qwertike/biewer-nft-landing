@@ -1,86 +1,81 @@
-import {
-  createThirdwebClient,
-  getContract,
-  getClaimConditions,
-  claimTo,
-} from "thirdweb";
+// launch.js
+import { useAddress, useMetamask, useNFTDrop } from "@thirdweb-dev/react";
 import { useEffect, useState } from "react";
 
-// Client létrehozása
-const client = createThirdwebClient({
-  clientId: "4307eea7e413a6850719d8df35c2a217",
-});
+const NFTDropAddress = "0xAFeaAeE58bEDF28807Bd48E6d00AF7AFf5655ba5";
 
-const contract = getContract({
-  client,
-  chain: defineChain(137), // Polygon
-  address: "0xAFeaAeE58bEDF28807Bd48E6d00AF7AFf5655ba5", // Az NFT Drop szerződés címe
-});
+export default function Launch() {
+  const connectWithMetamask = useMetamask();
+  const address = useAddress();
+  const nftDrop = useNFTDrop(NFTDropAddress);
 
-export default function MintPage() {
-  const [price, setPrice] = useState("-");
-  const [maxClaimable, setMaxClaimable] = useState(0);
+  const [claimCondition, setClaimCondition] = useState(null);
+  const [price, setPrice] = useState("0");
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [maxPerWallet, setMaxPerWallet] = useState(0);
 
-  // Aktív claim fázis lekérdezése
+  // Claim feltételek lekérdezése
   useEffect(() => {
-    async function fetchData() {
+    async function fetchClaimData() {
+      if (!nftDrop) return;
+
       try {
-        const claimConditions = await getClaimConditions({ contract });
-        if (claimConditions.length > 0) {
-          const claimCondition = claimConditions[0]; // Az első aktív fázis feltételei
-          const pricePerToken = Number(claimCondition.pricePerToken) / 1e18; // Átváltás POL-ra
-          const maxPerWallet = Number(claimCondition.quantityLimitPerWallet);
-          setPrice(pricePerToken.toString());
-          setMaxClaimable(maxPerWallet);
-        }
+        const conditions = await nftDrop.claimConditions.getActive();
+        setClaimCondition(conditions);
+        setPrice(conditions.currencyMetadata.displayValue);
+        setMaxPerWallet(conditions.maxClaimablePerWallet.toNumber());
       } catch (err) {
-        console.error("Hiba a lekérés során:", err);
+        console.error("Nem sikerült lekérni a claim feltételeket", err);
       }
     }
 
-    fetchData();
-  }, []);
+    fetchClaimData();
+  }, [nftDrop]);
 
-  const handleMint = async () => {
-    if (!account) return alert("Előbb csatlakozz a tárcáddal!");
+  const mintNFT = async () => {
+    if (!nftDrop || !address) return;
     setLoading(true);
     try {
-      const tx = await sendTransaction(() =>
-        claimTo({
-          contract,
-          to: account.address,
-          quantity,
-        })
-      );
-      alert("✅ NFT sikeresen mintelve!");
-      console.log("Mint sikeres:", tx);
+      const tx = await nftDrop.claimTo(address, quantity);
+      alert("🎉 NFT sikeresen mintelve!");
+      console.log("Sikeres tranzakció:", tx);
     } catch (err) {
       console.error("Mintelés hiba:", err);
-      alert("❌ Mintelés sikertelen: " + err?.message);
+      alert("❌ Mintelés sikertelen: " + err.message);
     }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-6 bg-gradient-to-br from-blue-100 to-pink-100">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6 bg-gradient-to-br from-purple-100 to-blue-100">
       <h1 className="text-3xl font-bold">🐶 Biewer Dog Lovers NFT</h1>
-      <ConnectButton client={client} />
-      {account && (
+
+      {!address ? (
+        <button onClick={connectWithMetamask} className="bg-purple-600 text-white px-6 py-2 rounded">
+          Csatlakozás Metamaskkal
+        </button>
+      ) : (
         <>
-          <div>🎯 Tárca: {account.address}</div>
-          <div>💰 Ár: {price} POL / NFT</div>
-          <div>📦 Max / wallet: {maxClaimable}</div>
+          <p>Wallet címed: {address}</p>
+          <p>Ár: {price} POL / NFT</p>
+          <p>Max mint / wallet: {maxPerWallet}</p>
+
+          <input
+            type="number"
+            value={quantity}
+            onChange={(e) => setQuantity(Math.min(maxPerWallet, Number(e.target.value)))}
+            min={1}
+            max={maxPerWallet}
+            className="border px-2 py-1 rounded w-20"
+          />
 
           <button
-            onClick={handleMint}
-            disabled={loading || maxClaimable < 1}
-            className="bg-pink-600 text-white px-6 py-3 rounded hover:bg-pink-700"
+            onClick={mintNFT}
+            disabled={loading}
+            className="bg-pink-500 text-white px-6 py-2 rounded hover:bg-pink-600"
           >
-            {loading
-              ? "Mintelés..."
-              : `Mint ${quantity} NFT (${(Number(price) * quantity).toFixed(2)} POL)`}
+            {loading ? "Mintelés..." : `Mintelj ${quantity} NFT-t`}
           </button>
         </>
       )}
