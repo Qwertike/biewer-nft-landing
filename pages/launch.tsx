@@ -4,6 +4,7 @@ import {
   ConnectWallet,
 } from "@thirdweb-dev/react";
 import { useEffect, useState } from "react";
+import { readContract } from "thirdweb"; // Importáljuk a readContract függvényt
 
 export default function LaunchPage() {
   const address = useAddress();
@@ -17,9 +18,31 @@ export default function LaunchPage() {
   const [price, setPrice] = useState(5);
   const [claimedSupply, setClaimedSupply] = useState(0);
   const [totalSupply, setTotalSupply] = useState(0);
+  const [claimConditions, setClaimConditions] = useState(null); // Állapot a claim feltételek tárolásához
 
   const DISCOUNT_PRICE = 5;
   const NORMAL_PRICE = 10;
+
+  // useEffect: automatikus adatlekérdezés a szerződéstől
+  useEffect(() => {
+    if (!contract) return; // Ha nincs szerződés, ne végezzük el a lekérdezést
+
+    const fetchClaimConditions = async () => {
+      try {
+        // Lekérdezzük az aktív claim feltételeket
+        const data = await readContract({
+          contract,
+          method: "getActiveClaimConditionId", // A metódus, amely az aktív feltételeket lekérdezi
+          params: [], // Paraméterek
+        });
+        setClaimConditions(data); // Az adatokat elmentjük az állapotba
+      } catch (error) {
+        console.error("Error fetching claim conditions:", error);
+      }
+    };
+
+    fetchClaimConditions(); // Lefuttatjuk a lekérdezést
+  }, [contract]); // Csak akkor fut le, ha a szerződés elérhető
 
   useEffect(() => {
     const launchTime = new Date("2025-05-01T16:00:00Z").getTime();
@@ -63,26 +86,29 @@ export default function LaunchPage() {
   }, [contract]);
 
   const handleMint = async () => {
-    if (!contract || !address) {
-      alert("Wallet not connected or contract missing");
-      return;
-    }
-
+    if (!contract || !address) return;
     try {
-      console.log("Minting started...");
-      const tx = await contract.claimTo(address, 1); // Attempt minting
-      console.log("Minting successful:", tx);
+      await contract.claimTo(address, 1);
 
-      // Update supply after mint
+      // ✅ Frissítés mint után
       const claimed = await contract.totalClaimedSupply();
       const total = await contract.totalSupply();
       setClaimedSupply(claimed.toNumber());
       setTotalSupply(total.toNumber());
 
-      alert("✅ Mint success!");
-    } catch (err: any) {
-      console.error("❌ Mint error:", err);
-      alert(`❌ Mint failed: ${err.message || err.reason || "Unknown error"}`);
+      // 🔁 Twitter conversion tracking
+      if (typeof window !== "undefined" && typeof window.twq === "function") {
+        window.twq("event", "tw-pku6z-pku70", {
+          value: price.toFixed(2),
+          currency: "MATIC",
+          conversion_id: `mint-${Date.now()}`
+        });
+      }
+
+      alert("✅ Successfully minted!");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Mint failed. Please try again.");
     }
   };
 
