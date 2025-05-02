@@ -11,12 +11,12 @@ import { createThirdwebClient, getContract } from "thirdweb";
 import { polygon } from "thirdweb/chains";
 import { useEffect, useState } from "react";
 
-// initialize the client
+// Thirdweb kliens beállítása
 const client = createThirdwebClient({
   clientId: "4307eea7e413a6850719d8df35c2a217", // Használj itt a saját clientId-dat
 });
 
-// connect to your smart contract
+// Szerződés csatlakoztatása
 const contract = getContract({
   client,
   chain: polygon, // Itt használd a kívánt hálózatot (pl. Polygon, Ethereum, stb.)
@@ -39,35 +39,29 @@ export default function MintPage() {
 
   const { data: ownedNFTs } = useOwnedNFTs({ contract, account });
 
-  // Aktív claim fázis lekérdezése és egyéb információk
+  // Claim feltételek lekérése
   useEffect(() => {
     async function fetchData() {
       try {
-        // Az összes claim feltétel lekérdezése
-        const claimConditions = await contract.getClaimConditions();
-
+        const claimConditions = await contract.claimConditions.getAll();
         if (claimConditions.length > 0) {
-          // Az első aktív fázis feltételei
-          const claimCondition = claimConditions[0]; // Ha több fázis van, akkor válasszuk az aktívat
+          const claimCondition = claimConditions[0]; // Az első aktív fázis
           const pricePerToken = Number(claimCondition.pricePerToken) / 1e18; // Átváltás 18 tizedesjegyre
           const maxPerWallet = Number(claimCondition.quantityLimitPerWallet);
           setPrice(pricePerToken.toString());
           setMaxClaimable(maxPerWallet);
 
-          // Aktuális NFT-k lekérdezése, hogy hányat birtokolsz
           const userOwns = ownedNFTs?.length || 0;
           const remaining = Math.max(0, maxPerWallet - userOwns);
           setMaxMintableNow(remaining);
           if (quantity > remaining) setQuantity(remaining || 1);
 
-          // Lazy mintelt NFT-k képeinek lekérése
           const lazyMinted = await contract.getAll();
           if (lazyMinted.length > 0) {
             const img = lazyMinted[0]?.metadata?.image;
             setImageUrl(img || "");
           }
 
-          // A teljes mintelt és elérhető NFT-k számának lekérdezése
           const totalClaimed = await contract.totalClaimedSupply();
           const totalUnclaimed = await contract.totalUnclaimedSupply();
           setClaimed(Number(totalClaimed));
