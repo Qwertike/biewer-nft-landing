@@ -80,14 +80,11 @@ export default function LaunchPage() {
           currency: "MATIC",
           conversion_id: `mint-${Date.now()}`
         });
-      }
-
-      alert("✅ Successfully minted!");
-    } catch (err) {
-      console.error(err);
-      alert("❌ Mint failed. Please try again.");
-    }
-  };
+      } catch (err: any) {
+  console.error("❌ Mint error:", err);
+  alert(`❌ Mint failed: ${err?.message || err?.reason || "Unknown error"}`);
+}
+ };
 
   return (
     <div className="min-h-screen p-10 text-center bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 text-gray-800">
