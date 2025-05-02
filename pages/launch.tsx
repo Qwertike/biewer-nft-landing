@@ -46,7 +46,7 @@ export default function LaunchPage() {
         const claimConditions = await getClaimConditions({ contract });
         if (claimConditions.length > 0) {
           const condition = claimConditions[0];
-          const pricePerToken = Number(condition.pricePerToken) / 1e18;
+          const pricePerToken = Number(condition.pricePerToken) / 1e6; // USDC használata (6 tizedes)
           setPrice(pricePerToken.toString());
         }
 
@@ -96,7 +96,7 @@ export default function LaunchPage() {
       {account && (
         <>
           <p>💳 Wallet: {account.address}</p>
-          <p>💰 Ár: {price} MATIC</p>
+          <p>💰 Ár: {price} USDC</p> {/* Átírva USDC-re */}
           <p>📦 Mintelve: {claimed} / {claimed + unclaimed}</p>
 
           <div className="flex items-center gap-2">
@@ -117,7 +117,7 @@ export default function LaunchPage() {
             disabled={loading}
             className="bg-pink-600 text-white px-6 py-2 rounded hover:bg-pink-700"
           >
-            {loading ? "Mintelés..." : `Mint ${quantity} NFT (${(Number(price) * quantity).toFixed(2)} MATIC)`}
+            {loading ? "Mintelés..." : `Mint ${quantity} NFT (${(Number(price) * quantity).toFixed(2)} USDC)`} {/* USDC használata */}
           </button>
 
           {imageUrl && (
