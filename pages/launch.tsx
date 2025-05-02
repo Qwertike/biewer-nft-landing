@@ -12,10 +12,10 @@ import {
   defineChain,
   getContract,
   claimTo,
-  readContract,
+  getActiveClaimCondition,
 } from "thirdweb";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 const client = createThirdwebClient({
   clientId: "4307eea7e413a6850719d8df35c2a217",
@@ -41,16 +41,7 @@ export default function MintPage() {
   useEffect(() => {
     async function fetchClaimCondition() {
       try {
-        const conditionId = await readContract({
-          contract,
-          method: "function getActiveClaimConditionId() view returns (uint256)",
-        });
-
-        const claimCondition = await readContract({
-          contract,
-          method: "function getClaimConditionById(uint256) view returns (tuple(uint256 startTimestamp, uint256 maxClaimableSupply, uint256 supplyClaimed, uint256 quantityLimitPerWallet, uint256 waitTimeInSecondsBetweenClaims, bytes32 merkleRoot, uint256 pricePerToken, address currency, string metadata))",
-          params: [conditionId],
-        });
+        const claimCondition = await getActiveClaimCondition({ contract });
 
         const pricePerToken = Number(claimCondition.pricePerToken) / 1e18;
         const maxPerWallet = Number(claimCondition.quantityLimitPerWallet);
