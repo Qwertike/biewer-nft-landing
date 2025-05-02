@@ -1,11 +1,11 @@
-import "../styles/globals.css"; // Importáljuk a globális stílusokat
-import { ThirdwebProvider } from "@thirdweb-dev/react"; // Importáljuk a Thirdweb szolgáltatást
-import type { AppProps } from "next/app"; // Alap Next.js AppProps típus
+import "../styles/globals.css";
+import { ThirdwebProvider } from "@thirdweb-dev/react";
+import type { AppProps } from "next/app";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <ThirdwebProvider activeChain="polygon"> {/* Polygon hálózat beállítása */}
-      <Component {...pageProps} /> {/* A megfelelő oldal renderelése */}
+    <ThirdwebProvider activeChain="polygon">
+      <Component {...pageProps} />
     </ThirdwebProvider>
   );
 }
