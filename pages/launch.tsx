@@ -4,7 +4,6 @@ import {
   ConnectWallet,
 } from "@thirdweb-dev/react";
 import { useEffect, useState } from "react";
-import { readContract } from "thirdweb"; // Importáljuk a readContract függvényt
 
 export default function LaunchPage() {
   const address = useAddress();
@@ -18,31 +17,11 @@ export default function LaunchPage() {
   const [price, setPrice] = useState(5);
   const [claimedSupply, setClaimedSupply] = useState(0);
   const [totalSupply, setTotalSupply] = useState(0);
-  const [claimConditions, setClaimConditions] = useState(null); // Állapot a claim feltételek tárolásához
+  const [priceInMatic, setPriceInMatic] = useState<number | null>(null);
+  const [maxQuantity, setMaxQuantity] = useState<number | null>(null);
 
   const DISCOUNT_PRICE = 5;
   const NORMAL_PRICE = 10;
-
-  // useEffect: automatikus adatlekérdezés a szerződéstől
-  useEffect(() => {
-    if (!contract) return; // Ha nincs szerződés, ne végezzük el a lekérdezést
-
-    const fetchClaimConditions = async () => {
-      try {
-        // Lekérdezzük az aktív claim feltételeket
-        const data = await readContract({
-          contract,
-          method: "getActiveClaimConditionId", // A metódus, amely az aktív feltételeket lekérdezi
-          params: [], // Paraméterek
-        });
-        setClaimConditions(data); // Az adatokat elmentjük az állapotba
-      } catch (error) {
-        console.error("Error fetching claim conditions:", error);
-      }
-    };
-
-    fetchClaimConditions(); // Lefuttatjuk a lekérdezést
-  }, [contract]); // Csak akkor fut le, ha a szerződés elérhető
 
   useEffect(() => {
     const launchTime = new Date("2025-05-01T16:00:00Z").getTime();
@@ -82,33 +61,43 @@ export default function LaunchPage() {
       }
     };
 
+    const fetchClaimCondition = async () => {
+      try {
+        const activeCondition = await contract.claimConditions.getActive();
+        const price = activeCondition.currencyMetadata.displayValue;
+        const quantity = activeCondition.maxClaimableSupply;
+
+        setPriceInMatic(parseFloat(price));
+        setMaxQuantity(Number(quantity));
+      } catch (error) {
+        console.error("❌ Nem sikerült lekérni az aktív claim condition-t:", error);
+      }
+    };
+
     fetchSupply();
+    fetchClaimCondition();
   }, [contract]);
 
   const handleMint = async () => {
-    if (!contract || !address) return;
-    try {
-      await contract.claimTo(address, 1);
+    if (!contract || !address) {
+      alert("Wallet not connected or contract missing");
+      return;
+    }
 
-      // ✅ Frissítés mint után
+    try {
+      console.log("Minting started...");
+      const tx = await contract.claimTo(address, 1);
+      console.log("Minting successful:", tx);
+
+      alert("✅ Mint success!");
+
       const claimed = await contract.totalClaimedSupply();
       const total = await contract.totalSupply();
       setClaimedSupply(claimed.toNumber());
       setTotalSupply(total.toNumber());
-
-      // 🔁 Twitter conversion tracking
-      if (typeof window !== "undefined" && typeof window.twq === "function") {
-        window.twq("event", "tw-pku6z-pku70", {
-          value: price.toFixed(2),
-          currency: "MATIC",
-          conversion_id: `mint-${Date.now()}`
-        });
-      }
-
-      alert("✅ Successfully minted!");
-    } catch (err) {
-      console.error(err);
-      alert("❌ Mint failed. Please try again.");
+    } catch (err: any) {
+      console.error("❌ Mint error:", err);
+      alert(`❌ Mint failed: ${err.message || err.reason || "Unknown error"}`);
     }
   };
 
@@ -135,8 +124,13 @@ export default function LaunchPage() {
               : `🔓 Price: ${NORMAL_PRICE} MATIC`}
           </div>
 
-          <div className="text-gray-600 mb-6">
+          <div className="text-gray-600 mb-2">
             {claimedSupply} / {totalSupply} NFTs minted
+          </div>
+
+          <div className="text-sm text-gray-700 mb-4">
+            💰 Aktuális ár: {priceInMatic ?? "–"} MATIC <br />
+            📦 Max. elérhető NFT ebben a fázisban: {maxQuantity ?? "–"}
           </div>
 
           <ConnectWallet
