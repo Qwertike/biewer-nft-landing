@@ -7,25 +7,19 @@ import {
   useSendTransaction,
   useOwnedNFTs,
 } from "thirdweb/react";
-import {
-  createThirdwebClient,
-  defineChain,
-  getContract,
-  claimTo,
-  totalClaimedSupply,
-  totalUnclaimedSupply,
-} from "thirdweb";
-
+import { createThirdwebClient, getContract } from "thirdweb";
+import { sepolia, polygon } from "thirdweb/chains";
 import { useEffect, useState } from "react";
 
-// A Thirdweb kliens beállítása
+// initialize the client
 const client = createThirdwebClient({
-  clientId: "4307eea7e413a6850719d8df35c2a217",
+  clientId: "4307eea7e413a6850719d8df35c2a217", // Használj itt a saját clientId-dat
 });
 
+// connect to your smart contract
 const contract = getContract({
   client,
-  chain: defineChain(137), // Polygon
+  chain: polygon, // Itt használd a kívánt hálózatot (pl. Polygon, Ethereum, stb.)
   address: "0xAFeaAeE58bEDF28807Bd48E6d00AF7AFf5655ba5", // Az NFT Drop szerződés címe
 });
 
@@ -49,24 +43,36 @@ export default function MintPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // A teljes mintelt és elérhető NFT-k számának lekérdezése
-        const totalClaimed = await totalClaimedSupply({ contract });
-        const totalUnclaimed = await totalUnclaimedSupply({ contract });
+        // Az összes claim feltétel lekérdezése
+        const claimConditions = await contract.getClaimConditions();
 
-        // Az első fázis lekérdezése az összes claim feltétel alapján
-        const maxPerWallet = 5; // Itt a max per wallet a szerződésedben kell legyen beállítva
-        const pricePerToken = 0.01; // A megfelelő ár beállítása
-        setPrice(pricePerToken.toString());
-        setMaxClaimable(maxPerWallet);
+        if (claimConditions.length > 0) {
+          // Az első aktív fázis feltételei
+          const claimCondition = claimConditions[0]; // Ha több fázis van, akkor válasszuk az aktívat
+          const pricePerToken = Number(claimCondition.pricePerToken) / 1e18; // Átváltás 18 tizedesjegyre
+          const maxPerWallet = Number(claimCondition.quantityLimitPerWallet);
+          setPrice(pricePerToken.toString());
+          setMaxClaimable(maxPerWallet);
 
-        // Aktuális NFT-k lekérdezése, hogy hányat birtokolsz
-        const userOwns = ownedNFTs?.length || 0;
-        const remaining = Math.max(0, maxPerWallet - userOwns);
-        setMaxMintableNow(remaining);
-        if (quantity > remaining) setQuantity(remaining || 1);
+          // Aktuális NFT-k lekérdezése, hogy hányat birtokolsz
+          const userOwns = ownedNFTs?.length || 0;
+          const remaining = Math.max(0, maxPerWallet - userOwns);
+          setMaxMintableNow(remaining);
+          if (quantity > remaining) setQuantity(remaining || 1);
 
-        setClaimed(Number(totalClaimed));
-        setUnclaimed(Number(totalUnclaimed));
+          // Lazy mintelt NFT-k képeinek lekérése
+          const lazyMinted = await contract.getAll();
+          if (lazyMinted.length > 0) {
+            const img = lazyMinted[0]?.metadata?.image;
+            setImageUrl(img || "");
+          }
+
+          // A teljes mintelt és elérhető NFT-k számának lekérdezése
+          const totalClaimed = await contract.totalClaimedSupply();
+          const totalUnclaimed = await contract.totalUnclaimedSupply();
+          setClaimed(Number(totalClaimed));
+          setUnclaimed(Number(totalUnclaimed));
+        }
       } catch (err) {
         console.error("Hiba a lekérés során:", err);
       }
@@ -81,11 +87,7 @@ export default function MintPage() {
     setLoading(true);
     try {
       const tx = await sendTransaction(() =>
-        claimTo({
-          contract,
-          to: account.address,
-          quantity,
-        })
+        contract.claimTo(account.address, quantity)
       );
       alert("✅ NFT sikeresen mintelve!");
       console.log("Mint sikeres:", tx);
