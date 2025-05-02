@@ -19,15 +19,18 @@ export default function MintPage() {
   const [currency, setCurrency] = useState("MATIC");
   const { mutateAsync: claimNFT, isLoading } = useClaimNFT(contract);
 
-  // Aktív claim condition lekérése
+  // Aktív claim feltételek lekérése az Id alapján
   useEffect(() => {
     if (!contract) return;
 
     const fetchClaimCondition = async () => {
       try {
-        const active = await contract.claimConditions.getActive();
-        setPrice(active.currencyMetadata.displayValue);
-        setCurrency(active.currencyMetadata.symbol);
+        // Az első claim feltétel ID-jának lekérése (pl. 0)
+        const activeClaimCondition = await contract.getClaimConditionById(0);
+        
+        // Állítsuk be az árat és a pénznemet
+        setPrice(activeClaimCondition.currencyMetadata.displayValue);
+        setCurrency(activeClaimCondition.currencyMetadata.symbol);
       } catch (error) {
         console.error("Nincs aktív claim fázis vagy hiba:", error);
       }
