@@ -80,10 +80,23 @@ export default function LaunchPage() {
           currency: "MATIC",
           conversion_id: `mint-${Date.now()}`
         });
-      } catch (err: any) {
-  console.error("❌ Mint error:", err);
-  alert(`❌ Mint failed: ${err?.message || err?.reason || "Unknown error"}`);
-}
+     const handleMint = async () => {
+  if (!contract || !address) {
+    alert("Wallet not connected or contract missing");
+    return;
+  }
+
+  try {
+    console.log("Minting started...");
+    const tx = await contract.claimTo(address, 1);
+    console.log("Minting successful:", tx);
+
+    alert("✅ Mint success!");
+  } catch (err: any) {
+    console.error("❌ Mint error:", err);
+    alert(`❌ Mint failed: ${err.message || err.reason || "Unknown error"}`);
+  }
+};
  };
 
   return (
