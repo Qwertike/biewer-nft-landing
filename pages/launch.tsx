@@ -63,41 +63,28 @@ export default function LaunchPage() {
   }, [contract]);
 
   const handleMint = async () => {
-    if (!contract || !address) return;
-    try {
-      await contract.claimTo(address, 1);
+    if (!contract || !address) {
+      alert("Wallet not connected or contract missing");
+      return;
+    }
 
-      // ✅ Frissítés mint után
+    try {
+      console.log("Minting started...");
+      const tx = await contract.claimTo(address, 1); // Attempt minting
+      console.log("Minting successful:", tx);
+
+      // Update supply after mint
       const claimed = await contract.totalClaimedSupply();
       const total = await contract.totalSupply();
       setClaimedSupply(claimed.toNumber());
       setTotalSupply(total.toNumber());
 
-      // 🔁 Twitter conversion tracking
-      if (typeof window !== "undefined" && typeof window.twq === "function") {
-        window.twq("event", "tw-pku6z-pku70", {
-          value: price.toFixed(2),
-          currency: "MATIC",
-          conversion_id: `mint-${Date.now()}`
-        });
-     const handleMint = async () => {
-  if (!contract || !address) {
-    alert("Wallet not connected or contract missing");
-    return;
-  }
-
-  try {
-    console.log("Minting started...");
-    const tx = await contract.claimTo(address, 1);
-    console.log("Minting successful:", tx);
-
-    alert("✅ Mint success!");
-  } catch (err: any) {
-    console.error("❌ Mint error:", err);
-    alert(`❌ Mint failed: ${err.message || err.reason || "Unknown error"}`);
-  }
-};
- };
+      alert("✅ Mint success!");
+    } catch (err: any) {
+      console.error("❌ Mint error:", err);
+      alert(`❌ Mint failed: ${err.message || err.reason || "Unknown error"}`);
+    }
+  };
 
   return (
     <div className="min-h-screen p-10 text-center bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 text-gray-800">
