@@ -8,7 +8,7 @@ import {
   useOwnedNFTs,
 } from "thirdweb/react";
 import { createThirdwebClient, getContract } from "thirdweb";
-import { sepolia, polygon } from "thirdweb/chains";
+import { polygon } from "thirdweb/chains";
 import { useEffect, useState } from "react";
 
 // initialize the client
