@@ -1,1 +1,7 @@
+# Visual Studio fájlok
+.vs/
+
+# .env fájlok, amelyeket nem szeretnénk verziókezelni
 .env
+
+
