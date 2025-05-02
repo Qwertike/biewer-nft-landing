@@ -12,7 +12,7 @@ import {
   defineChain,
   getContract,
   claimTo,
-  getActiveClaimConditionId,
+  getClaimConditions,
   getAllLazyMinted,
   totalClaimedSupply,
   totalUnclaimedSupply,
@@ -51,35 +51,36 @@ export default function MintPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Az aktív claim fázis ID lekérdezése
-        const activeClaimConditionId = await getActiveClaimConditionId({ contract });
-        console.log("Aktív claim condition ID:", activeClaimConditionId);
+        // Az összes claim feltétel lekérdezése
+        const claimConditions = await getClaimConditions({ contract });
 
-        // Az aktív claim feltételek lekérdezése az ID alapján
-        const claimCondition = await contract.call("getClaimCondition", activeClaimConditionId);
-        const pricePerToken = Number(claimCondition.pricePerToken) / 1e18; // Átváltás 18 tizedesjegyre
-        const maxPerWallet = Number(claimCondition.quantityLimitPerWallet);
-        setPrice(pricePerToken.toString());
-        setMaxClaimable(maxPerWallet);
+        if (claimConditions.length > 0) {
+          // Az első aktív fázis feltételei
+          const claimCondition = claimConditions[0]; // Használhatunk több fázist is, ha szükséges
+          const pricePerToken = Number(claimCondition.pricePerToken) / 1e18; // Átváltás 18 tizedesjegyre
+          const maxPerWallet = Number(claimCondition.quantityLimitPerWallet);
+          setPrice(pricePerToken.toString());
+          setMaxClaimable(maxPerWallet);
 
-        // Aktuális NFT-k lekérdezése, hogy hányat birtokolsz
-        const userOwns = ownedNFTs?.length || 0;
-        const remaining = Math.max(0, maxPerWallet - userOwns);
-        setMaxMintableNow(remaining);
-        if (quantity > remaining) setQuantity(remaining || 1);
+          // Aktuális NFT-k lekérdezése, hogy hányat birtokolsz
+          const userOwns = ownedNFTs?.length || 0;
+          const remaining = Math.max(0, maxPerWallet - userOwns);
+          setMaxMintableNow(remaining);
+          if (quantity > remaining) setQuantity(remaining || 1);
 
-        // Lazy mintelt NFT-k képeinek lekérése
-        const lazyMinted = await getAllLazyMinted({ contract });
-        if (lazyMinted.length > 0) {
-          const img = lazyMinted[0]?.metadata?.image;
-          setImageUrl(img || "");
+          // Lazy mintelt NFT-k képeinek lekérése
+          const lazyMinted = await getAllLazyMinted({ contract });
+          if (lazyMinted.length > 0) {
+            const img = lazyMinted[0]?.metadata?.image;
+            setImageUrl(img || "");
+          }
+
+          // A teljes mintelt és elérhető NFT-k számának lekérdezése
+          const totalClaimed = await totalClaimedSupply({ contract });
+          const totalUnclaimed = await totalUnclaimedSupply({ contract });
+          setClaimed(Number(totalClaimed));
+          setUnclaimed(Number(totalUnclaimed));
         }
-
-        // A teljes mintelt és elérhető NFT-k számának lekérdezése
-        const totalClaimed = await totalClaimedSupply({ contract });
-        const totalUnclaimed = await totalUnclaimedSupply({ contract });
-        setClaimed(Number(totalClaimed));
-        setUnclaimed(Number(totalUnclaimed));
       } catch (err) {
         console.error("Hiba a lekérés során:", err);
       }
