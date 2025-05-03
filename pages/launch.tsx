@@ -4,8 +4,7 @@ import {
   ConnectButton,
   useActiveAccount,
   useSendTransaction,
-} from "thirdweb/react";
-
+} from "@thirdweb-dev/react"; // ✅ helyes import
 import {
   createThirdwebClient,
   defineChain,
