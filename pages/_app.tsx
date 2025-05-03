@@ -1,7 +1,6 @@
-// pages/_app.tsx
+import { ThirdwebProvider } from "@thirdweb-dev/react"; // Az aktív Thirdweb SDK importálása
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
-import { ThirdwebProvider } from "thirdweb/react";
 import { createThirdwebClient } from "thirdweb";
 import { polygon } from "thirdweb/chains";
 
@@ -18,3 +17,4 @@ function MyApp({ Component, pageProps }: AppProps) {
 }
 
 export default MyApp;
+

@@ -16,65 +16,72 @@ import {
   totalUnclaimedSupply,
 } from "thirdweb";
 
+import { contractConst, chainConst } from "../consts/parameters";
 import { useEffect, useState } from "react";
 
+// Thirdweb kliens létrehozása
 const client = createThirdwebClient({
-  clientId: "4307eea7e413a6850719d8df35c2a217",
+  clientId: "4307eea7e413a6850719d8df35c2a217", // a te Thirdweb project kulcsod
 });
 
+// Contract beállítás
 const contract = getContract({
   client,
-  chain: defineChain(137), // Polygon
-  address: "0xAFeaAeE58bEDF28807Bd48E6d00AF7AFf5655ba5",
+  chain: defineChain(chainConst),
+  address: contractConst,
 });
 
 export default function LaunchPage() {
   const account = useActiveAccount();
   const sendTransaction = useSendTransaction();
 
-  const [price, setPrice] = useState("-");
-  const [quantity, setQuantity] = useState(1);
-  const [imageUrl, setImageUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [claimed, setClaimed] = useState(0);
-  const [unclaimed, setUnclaimed] = useState(0);
-  const [earlyOffer, setEarlyOffer] = useState(false);
+  const [price, setPrice] = useState("-"); // Ár tárolása
+  const [quantity, setQuantity] = useState(1); // Mintelni kívánt darabok száma
+  const [imageUrl, setImageUrl] = useState(""); // Kép URL
+  const [loading, setLoading] = useState(false); // Betöltés állapot
+  const [claimed, setClaimed] = useState(0); // Mintelve lévő NFT-k száma
+  const [unclaimed, setUnclaimed] = useState(0); // Elérhető NFT-k száma
+  const [earlyOffer, setEarlyOffer] = useState(false); // Early offer logika
 
   useEffect(() => {
     async function fetchData() {
       try {
+        // ClaimConditions lekérése
         const claimConditions = await getClaimConditions({ contract });
         if (claimConditions.length > 0) {
           const condition = claimConditions[0];
-          const pricePerToken = Number(condition.pricePerToken) / 1e6; // USDC használata (6 tizedes)
+          const pricePerToken = Number(condition.pricePerToken) / 1e6; // USDC
           setPrice(pricePerToken.toString());
         }
 
+        // Lazy minted NFT-k lekérése
         const lazyMinted = await getAllLazyMinted({ contract });
         if (lazyMinted.length > 0) {
           const img = lazyMinted[0]?.metadata?.image;
           setImageUrl(img || "");
         }
 
+        // Teljes mintelt és elérhető NFT számok lekérése
         const totalClaimed = await totalClaimedSupply({ contract });
         const totalUnclaimed = await totalUnclaimedSupply({ contract });
         setClaimed(Number(totalClaimed));
         setUnclaimed(Number(totalUnclaimed));
 
-        // Early Offer logika: Ha az első 500 NFT-nél tartunk, akkor 5 USDC ára legyen
+        // Early Offer logika
         if (totalClaimed < 500) {
-          setEarlyOffer(true);
+          setEarlyOffer(true); // Az első 500 NFT-nél 5 USDC
         } else {
           setEarlyOffer(false);
         }
       } catch (e) {
-        console.error("Hiba a mint információ lekérésénél:", e);
+        console.error("Mint adatok lekérése sikertelen:", e);
       }
     }
 
     fetchData();
   }, [claimed]); // A claimed változóra figyelünk, hogy mindig frissülni tudjon a számlálás
 
+  // Mintelés kezelése
   const handleMint = async () => {
     if (!account) return alert("Csatlakozz a tárcával előbb!");
     setLoading(true);
@@ -99,9 +106,9 @@ export default function LaunchPage() {
       // Frissítsük a claimed számot tranzakció után
       const updatedClaimed = await totalClaimedSupply({ contract });
       setClaimed(Number(updatedClaimed));
-    } catch (err) {
-      console.error("Mint hiba:", err);
-      alert("❌ Mint sikertelen: " + err?.message);
+    } catch (err: any) {
+      console.error("Mintelés sikertelen:", err);
+      alert("❌ Hiba: " + err?.message);
     }
     setLoading(false);
   };
@@ -135,7 +142,7 @@ export default function LaunchPage() {
             disabled={loading}
             className="bg-pink-600 text-white px-6 py-2 rounded hover:bg-pink-700"
           >
-            {loading ? "Mintelés..." : `Mint ${quantity} NFT (${(Number(earlyOffer ? "5" : price) * quantity).toFixed(2)} USDC)`}
+            {loading ? "Mintelés..." : `Mint ${quantity} NFT (${(Number(price) * quantity).toFixed(2)} USDC)`}
           </button>
 
           {imageUrl && (
@@ -146,3 +153,4 @@ export default function LaunchPage() {
     </div>
   );
 }
+
