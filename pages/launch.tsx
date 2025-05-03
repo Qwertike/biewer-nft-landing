@@ -1,156 +1,81 @@
 "use client";
 
-import {
-  ConnectButton,
-  useActiveAccount,
-  useSendTransaction,
-} from "@thirdweb-dev/react"; // ✅ helyes import
+import { useState } from "react";
 import {
   createThirdwebClient,
-  defineChain,
   getContract,
-  claimTo,
-  getClaimConditions,
-  getAllLazyMinted,
-  totalClaimedSupply,
-  totalUnclaimedSupply,
 } from "thirdweb";
+import { defineChain } from "thirdweb/chains";
+import {
+  useConnect,
+  useDisconnect,
+  useActiveWallet,
+  useContract,
+  useClaimNFT,
+} from "thirdweb/react";
 
-import { contractConst, chainConst } from "../consts/parameters";
-import { useEffect, useState } from "react";
-
-// Thirdweb kliens létrehozása
 const client = createThirdwebClient({
-  clientId: "4307eea7e413a6850719d8df35c2a217", // a te Thirdweb project kulcsod
+  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID!,
 });
 
-// Contract beállítás
-const contract = getContract({
-  client,
-  chain: defineChain(chainConst),
-  address: contractConst,
-});
+const chain = defineChain(137); // Polygon
 
 export default function LaunchPage() {
-  const account = useActiveAccount();
-  const sendTransaction = useSendTransaction();
+  const connect = useConnect();
+  const disconnect = useDisconnect();
+  const wallet = useActiveWallet();
 
-  const [price, setPrice] = useState("-"); // Ár tárolása
-  const [quantity, setQuantity] = useState(1); // Mintelni kívánt darabok száma
-  const [imageUrl, setImageUrl] = useState(""); // Kép URL
-  const [loading, setLoading] = useState(false); // Betöltés állapot
-  const [claimed, setClaimed] = useState(0); // Mintelve lévő NFT-k száma
-  const [unclaimed, setUnclaimed] = useState(0); // Elérhető NFT-k száma
-  const [earlyOffer, setEarlyOffer] = useState(false); // Early offer logika
+  const { contract } = useContract({
+    client,
+    chain,
+    address: "0xAFeaAeE58bEDF28807Bd48E6d00AF7AFf5655ba5", // NFT contract
+  });
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        // ClaimConditions lekérése
-        const claimConditions = await getClaimConditions({ contract });
-        if (claimConditions.length > 0) {
-          const condition = claimConditions[0];
-          const pricePerToken = Number(condition.pricePerToken) / 1e6; // USDC
-          setPrice(pricePerToken.toString());
-        }
+  const { claimNFT, isLoading, error } = useClaimNFT({
+    contract,
+  });
 
-        // Lazy minted NFT-k lekérése
-        const lazyMinted = await getAllLazyMinted({ contract });
-        if (lazyMinted.length > 0) {
-          const img = lazyMinted[0]?.metadata?.image;
-          setImageUrl(img || "");
-        }
-
-        // Teljes mintelt és elérhető NFT számok lekérése
-        const totalClaimed = await totalClaimedSupply({ contract });
-        const totalUnclaimed = await totalUnclaimedSupply({ contract });
-        setClaimed(Number(totalClaimed));
-        setUnclaimed(Number(totalUnclaimed));
-
-        // Early Offer logika
-        if (totalClaimed < 500) {
-          setEarlyOffer(true); // Az első 500 NFT-nél 5 USDC
-        } else {
-          setEarlyOffer(false);
-        }
-      } catch (e) {
-        console.error("Mint adatok lekérése sikertelen:", e);
-      }
-    }
-
-    fetchData();
-  }, [claimed]); // A claimed változóra figyelünk, hogy mindig frissülni tudjon a számlálás
-
-  // Mintelés kezelése
   const handleMint = async () => {
-    if (!account) return alert("Csatlakozz a tárcával előbb!");
-    setLoading(true);
-    try {
-      let mintPrice = price; // Alapértelmezett ár
-
-      // Ha az Early Supporter Offer aktív, akkor 5 USDC
-      if (earlyOffer && claimed < 500) {
-        mintPrice = "5"; // 5 USDC ár
-      }
-
-      const tx = await sendTransaction(() =>
-        claimTo({
-          contract,
-          to: account.address,
-          quantity,
-        })
-      );
-      alert("✅ Sikeres mintelés!");
-      console.log("Mint tranzakció:", tx);
-
-      // Frissítsük a claimed számot tranzakció után
-      const updatedClaimed = await totalClaimedSupply({ contract });
-      setClaimed(Number(updatedClaimed));
-    } catch (err: any) {
-      console.error("Mintelés sikertelen:", err);
-      alert("❌ Hiba: " + err?.message);
+    if (!wallet) {
+      alert("Csatlakozz először a walleteddel!");
+      return;
     }
-    setLoading(false);
+
+    try {
+      await claimNFT({
+        to: wallet.address,
+        quantity: 1,
+      });
+      alert("Sikeres mintelés!");
+    } catch (err) {
+      console.error(err);
+      alert("Hiba történt mintelés közben.");
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-6 bg-gradient-to-br from-yellow-50 to-pink-100">
-      <h1 className="text-3xl font-bold">🐶 Biewer Dog Lovers NFT</h1>
-      <ConnectButton client={client} />
+    <main className="flex flex-col items-center justify-center p-10">
+      <h1 className="text-4xl font-bold mb-6">Biewer Dog Lovers NFT Mint</h1>
 
-      {account && (
+      {!wallet ? (
+        <button onClick={() => connect.connect("injected")}>
+          Wallet csatlakoztatása
+        </button>
+      ) : (
         <>
-          <p>💳 Wallet: {account.address}</p>
-          <p>💰 Ár: {earlyOffer ? "5 USDC" : `${price} USDC`}</p> {/* Early offer esetén 5 USDC */}
-          <p>📦 Mintelve: {claimed} / {claimed + unclaimed}</p>
-
-          <div className="flex items-center gap-2">
-            <label htmlFor="quantity">Darab:</label>
-            <input
-              id="quantity"
-              type="number"
-              min={1}
-              max={10}
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              className="border px-3 py-1 rounded"
-            />
-          </div>
-
-          <button
-            onClick={handleMint}
-            disabled={loading}
-            className="bg-pink-600 text-white px-6 py-2 rounded hover:bg-pink-700"
-          >
-            {loading ? "Mintelés..." : `Mint ${quantity} NFT (${(Number(price) * quantity).toFixed(2)} USDC)`}
+          <p>Csatlakozva: {wallet.address}</p>
+          <button onClick={handleMint} disabled={isLoading}>
+            {isLoading ? "Mintelés..." : "NFT mintelése USDC-ért"}
           </button>
-
-          {imageUrl && (
-            <img src={imageUrl} alt="NFT előnézet" className="w-64 h-64 rounded-xl shadow-md mt-4" />
-          )}
+          <button onClick={disconnect.disconnect} className="mt-4">
+            Leválasztás
+          </button>
         </>
       )}
-    </div>
+
+      {error && <p className="text-red-600 mt-4">Hiba: {error.message}</p>}
+    </main>
   );
 }
+
 

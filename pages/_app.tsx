@@ -1,20 +1,38 @@
-import { ThirdwebProvider } from "@thirdweb-dev/react"; // Az aktív Thirdweb SDK importálása
-import "../styles/globals.css";
+// pages/_app.tsx
+import { ThirdwebProvider } from "thirdweb/react";
+import { defineChain } from "thirdweb/chains";
 import type { AppProps } from "next/app";
-import { createThirdwebClient } from "thirdweb";
-import { polygon } from "thirdweb/chains";
 
-const client = createThirdwebClient({
-  clientId: "4307eea7e413a6850719d8df35c2a217", // a te Thirdweb project kulcsod
-});
+const clientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID!;
 
-function MyApp({ Component, pageProps }: AppProps) {
+export default function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <ThirdwebProvider client={client} chain={polygon}>
+    <ThirdwebProvider
+      clientId={clientId}
+      activeChain={defineChain(137)} // Polygon
+    >
       <Component {...pageProps} />
     </ThirdwebProvider>
   );
 }
 
-export default MyApp;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
